@@ -1,7 +1,7 @@
-CC = gcc
-AR = ar
+CC = ppc-amigaos-gcc
+AR = ppc-amigaos-ar
 DEBUG = 1
-OSTYPE = $(shell uname -s)
+OSTYPE = AmigaOS
 
 CFLAGS = -Wall -I.
 
@@ -18,6 +18,10 @@ endif
 ifeq ($(OSTYPE), AROS)
 # I shouldn't need to do this manually
 CFLAGS += -march=i586
+endif
+
+ifeq ($(OSTYPE), AmigaOS)
+CFLAGS += -D__USE_INLINE__
 endif
 
 OBJ = \

@@ -1,6 +1,7 @@
-# POSIX Threads for AROS and MorphOS
+# POSIX Threads for AROS and MorphOS and AmigaOS 4
 
 This library implements a subset of the POSIX Threads standard on top of the native Amiga APIs (SignalSemaphores, signals, processes, etc.). 
+AmigaOS 4 fixes added by jaokim.
 
 ## Limitations
 

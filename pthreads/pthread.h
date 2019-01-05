@@ -28,6 +28,33 @@
 #include <exec/semaphores.h>
 #include <sched.h>
 
+#ifdef __amigaos4__
+#define IPTR APTR
+#define GetNodeName(node) ((struct Node *)node)->ln_Name
+#define ForeachNode(l,n) \
+    for (n=(void *)(((struct List *)(l))->lh_Head); \
+    ((struct Node *)(n))->ln_Succ; \
+    n=(void *)(((struct Node *)(n))->ln_Succ))
+
+#define ForeachNodeSafe(l,n,n2) \
+    for (n=(void *)(((struct List *)(l))->lh_Head); \
+        (n2=(void *)((struct Node *)(n))->ln_Succ); \
+        n=(void *)n2)
+
+#undef NEWLIST
+#define NEWLIST(_l)                                     \
+do                                                      \
+{                                                       \
+    struct List *__aros_list_tmp = (struct List *)(_l), \
+                *l = __aros_list_tmp;                   \
+                                                        \
+    l->lh_TailPred = (struct Node *)l;                \
+    l->lh_Tail     = 0;                                 \
+    l->lh_Head     = (struct Node *)&l->lh_Tail;      \
+} while (0)
+
+#endif
+
 //
 // POSIX options
 //
@@ -87,12 +114,12 @@ typedef unsigned int pthread_key_t;
 
 struct pthread_attr
 {
-	void *stackaddr;
-	size_t stacksize;
-	int detachstate;
-	struct sched_param param;
-	int inheritsched;
-	int contentionscope;
+    void *stackaddr;
+    size_t stacksize;
+    int detachstate;
+    struct sched_param param;
+    int inheritsched;
+    int contentionscope;
 };
 
 typedef struct pthread_attr pthread_attr_t;
@@ -105,9 +132,9 @@ typedef struct pthread_attr pthread_attr_t;
 
 struct pthread_once
 {
-	volatile int done;
-	int started;
-	int lock;
+    volatile int done;
+    int started;
+    int lock;
 };
 
 typedef struct pthread_once pthread_once_t;
@@ -125,21 +152,28 @@ typedef struct pthread_once pthread_once_t;
 
 struct pthread_mutexattr
 {
-	int pshared;
-	int kind;
+    int pshared;
+    int kind;
 };
 
 typedef struct pthread_mutexattr pthread_mutexattr_t;
 
 struct pthread_mutex
 {
-	int kind;
-	struct SignalSemaphore semaphore;
-	int incond;
+    int kind;
+    struct SignalSemaphore semaphore;
+    int incond;
 };
 
 typedef struct pthread_mutex pthread_mutex_t;
 
+#if defined(__amigaos4__) && !defined(__timespec_defined)
+struct timespec
+{
+    unsigned int tv_sec;
+    unsigned int tv_nsec;
+};
+#endif
 //#ifndef __AROS__
 #define NULL_MINLIST {0, 0, 0}
 //#else
@@ -160,16 +194,16 @@ typedef struct pthread_mutex pthread_mutex_t;
 
 struct pthread_condattr
 {
-	int pshared;
+    int pshared;
 };
 
 typedef struct pthread_condattr pthread_condattr_t;
 
 struct pthread_cond
 {
-	int pad1;
-	struct SignalSemaphore semaphore;
-	struct MinList waiters;
+    int pad1;
+    struct SignalSemaphore semaphore;
+    struct MinList waiters;
 };
 
 typedef struct pthread_cond pthread_cond_t;
@@ -184,17 +218,17 @@ typedef struct pthread_cond pthread_cond_t;
 
 struct pthread_barrierattr
 {
-	int pshared;
+    int pshared;
 };
 
 typedef struct pthread_barrierattr pthread_barrierattr_t;
 
 struct pthread_barrier
 {
-	unsigned int curr_height;
-	unsigned int total_height;
-	pthread_cond_t breeched;
-	pthread_mutex_t lock;
+    unsigned int curr_height;
+    unsigned int total_height;
+    pthread_cond_t breeched;
+    pthread_mutex_t lock;
 };
 
 typedef struct pthread_barrier pthread_barrier_t;
@@ -205,14 +239,14 @@ typedef struct pthread_barrier pthread_barrier_t;
 
 struct pthread_rwlockattr
 {
-	int pshared;
+    int pshared;
 };
 
 typedef struct pthread_rwlockattr pthread_rwlockattr_t;
 
 struct pthread_rwlock
 {
-	struct SignalSemaphore semaphore;
+    struct SignalSemaphore semaphore;
 };
 
 typedef struct pthread_rwlock pthread_rwlock_t;
@@ -272,6 +306,7 @@ int pthread_setcanceltype(int type, int *oldtype);
 void pthread_testcancel(void);
 int pthread_once(pthread_once_t *once_control, void (*init_routine)(void));
 
+#define pthread_sigmask(blocktype, mask_ptr, unused1) sigprocmask(blocktype, mask_ptr, unused1);
 //
 // Scheduling functions
 //

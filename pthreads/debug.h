@@ -22,26 +22,27 @@
 #define __DLL_DEBUG_H
 
 #ifdef __AROS__
-	#include <aros/debug.h>
+    #include <aros/debug.h>
 #else
-	#ifdef DEBUG
-		#define D(x) x
-		#if DEBUG > 1
-			#define DB2(x) x
-		#else
-			#define DB2(x)
-		#endif
-	#else
-		#define D(x)
-		#define DB2(x)
-	#endif
-	#ifdef __amigaos4__
-		#include <proto/exec.h>
-		#define bug DebugPrintF
-	#else
-		#include <clib/debug_protos.h>
-		#define bug(fmt, ...) kprintf((CONST_STRPTR)fmt, __VA_ARGS__)
-	#endif
+    #ifdef DEBUG
+        #define D(x) x
+        #if DEBUG > 1
+            #define DB2(x) x
+        #else
+            #define DB2(x)
+        #endif
+    #else
+        #define D(x)
+        #define DB2(x)
+    #endif
+    #ifdef __amigaos4__
+        #include <proto/exec.h>
+        #define bug(fmt, ...)
+        //DebugPrintF((CONST_STRPTR)fmt, __VA_ARGS__)
+    #else
+        #include <clib/debug_protos.h>
+        #define bug(fmt, ...) kprintf((CONST_STRPTR)fmt, __VA_ARGS__)
+    #endif
 #endif
 
 #endif
